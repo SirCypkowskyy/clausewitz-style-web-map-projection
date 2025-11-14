@@ -1,0 +1,10 @@
+# Poniższy pylint służy tylko po to, by robić lint checki z ograniczeniem na liczbę linii w plikach.
+# Dzięki temu możemy mieć pewność, że pliki nie będą zbyt długie i że będzie naturalna tendencja do ich dzielenia na mniejsze pliki.
+# W ten sposób zapewniamy decoupling logiki między komponentami.
+
+[MESSAGES CONTROL]
+disable=all
+enable=too-many-lines,abstract-method
+
+[FORMAT]
+max-module-lines=200

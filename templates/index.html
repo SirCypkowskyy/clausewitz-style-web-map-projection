@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Viewer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(240 3.7% 15.9%)",
+                        input: "hsl(240 3.7% 15.9%)",
+                        ring: "hsl(240 4.9% 83.9%)",
+                        background: "hsl(240 10% 3.9%)",
+                        foreground: "hsl(0 0% 98%)",
+                        primary: {
+                            DEFAULT: "hsl(0 0% 98%)",
+                            foreground: "hsl(240 5.9% 10%)",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(240 3.7% 15.9%)",
+                            foreground: "hsl(0 0% 98%)",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(240 3.7% 15.9%)",
+                            foreground: "hsl(240 5% 64.9%)",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(240 3.7% 15.9%)",
+                            foreground: "hsl(0 0% 98%)",
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: hsl(240 10% 3.9%);
+            color: hsl(0 0% 98%);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: hsl(240 3.7% 15.9%);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: hsl(240 5% 26%);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: hsl(240 5% 34%);
+        }
+
+        input[type="text"],
+        input[type="color"],
+        select {
+            background: hsl(240 3.7% 15.9%);
+            border: 1px solid hsl(240 3.7% 15.9%);
+            color: hsl(0 0% 98%);
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        input[type="text"]:hover,
+        select:hover {
+            border-color: hsl(240 5% 26%);
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            border-color: hsl(0 0% 98%);
+            ring: 2px;
+            ring-color: hsl(240 4.9% 83.9% / 0.2);
+        }
+
+        input[type="color"] {
+            padding: 0.25rem;
+            cursor: pointer;
+            height: 36px;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 2px;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 4px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            background: hsl(240 3.7% 15.9%);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: hsl(0 0% 98%);
+            border: 2px solid hsl(240 10% 3.9%);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: hsl(0 0% 90%);
+            transform: scale(1.1);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: hsl(0 0% 98%);
+            border: 2px solid hsl(240 10% 3.9%);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            background: hsl(0 0% 90%);
+            transform: scale(1.1);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            outline: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background: hsl(0 0% 98%);
+            color: hsl(240 5.9% 10%);
+            border-color: hsl(0 0% 98%);
+        }
+
+        .btn-primary:hover {
+            background: hsl(0 0% 90%);
+        }
+
+        .btn-secondary {
+            background: hsl(240 3.7% 15.9%);
+            color: hsl(0 0% 98%);
+            border-color: hsl(240 3.7% 15.9%);
+        }
+
+        .btn-secondary:hover {
+            background: hsl(240 5% 26%);
+            border-color: hsl(240 5% 26%);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: hsl(0 0% 98%);
+        }
+
+        .btn-ghost:hover {
+            background: hsl(240 3.7% 15.9%);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: hsl(0 0% 98%);
+            border-color: hsl(240 3.7% 15.9%);
+        }
+
+        .btn-outline:hover {
+            background: hsl(240 3.7% 15.9%);
+        }
+
+        .card {
+            background: hsl(240 10% 3.9%);
+            border: 1px solid hsl(240 3.7% 15.9%);
+            border-radius: 8px;
+        }
+
+        .card-header {
+            padding: 1rem 1rem 0.75rem 1rem;
+            border-bottom: 1px solid hsl(240 3.7% 15.9%);
+        }
+
+        .card-content {
+            padding: 1rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-flex;
+            height: 20px;
+            width: 36px;
+            flex-shrink: 0;
+            cursor: pointer;
+            border-radius: 9999px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            background: hsl(240 3.7% 15.9%);
+        }
+
+        .toggle-switch.active {
+            background: hsl(0 0% 98%);
+        }
+
+        .toggle-indicator {
+            pointer-events: none;
+            display: block;
+            height: 16px;
+            width: 16px;
+            border-radius: 9999px;
+            background: hsl(240 5.9% 10%);
+            transition: transform 0.2s;
+            transform: translateX(0);
+        }
+
+        .toggle-switch.active .toggle-indicator {
+            transform: translateX(16px);
+            background: hsl(240 5.9% 10%);
+        }
+
+        .effect-card {
+            background: hsl(240 3.7% 15.9%);
+            border: 1px solid hsl(240 5% 26%);
+            border-radius: 6px;
+            padding: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .effect-card:hover {
+            border-color: hsl(240 5% 34%);
+        }
+
+        .effect-card.active {
+            background: hsl(240 5% 26%);
+            border-color: hsl(0 0% 98%);
+        }
+
+        .layer-card {
+            background: hsl(240 3.7% 15.9%);
+            border: 1px solid hsl(240 5% 26%);
+            border-radius: 6px;
+            padding: 0.75rem;
+            transition: all 0.2s;
+            cursor: move;
+        }
+
+        .layer-card:hover {
+            background: hsl(240 5% 26%);
+        }
+
+        .sortable-ghost {
+            opacity: 0.4;
+            background: hsl(240 5% 26%);
+        }
+
+        .province-card {
+            background: hsl(240 3.7% 15.9%);
+            border: 1px solid hsl(240 5% 26%);
+            border-radius: 6px;
+            padding: 1rem;
+            transition: all 0.2s;
+        }
+
+        .province-card:hover {
+            border-color: hsl(240 5% 34%);
+        }
+
+        .tooltip {
+            background: hsl(240 10% 3.9% / 0.95);
+            backdrop-filter: blur(8px);
+            border: 1px solid hsl(240 3.7% 15.9%);
+            border-radius: 6px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+        }
+
+        .separator {
+            height: 1px;
+            background: hsl(240 3.7% 15.9%);
+            margin: 0.75rem 0;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 9999px;
+            padding: 0.125rem 0.625rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: hsl(240 3.7% 15.9%);
+            color: hsl(0 0% 98%);
+            border: 1px solid hsl(240 5% 26%);
+        }
+
+        .label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: hsl(0 0% 98%);
+        }
+
+        .label-muted {
+            color: hsl(240 5% 64.9%);
+            font-weight: 400;
+        }
+
+        kbd {
+            pointer-events: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            border: 1px solid hsl(240 3.7% 15.9%);
+            background: hsl(240 10% 3.9%);
+            padding: 0.125rem 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            font-family: ui-monospace, monospace;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideIn 0.2s ease-out;
+        }
+
+        #mapWrapper {
+            background: hsl(240 10% 3.9%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .debug-badge {
+            background: hsl(240 10% 3.9% / 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid hsl(240 3.7% 15.9%);
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            font-family: ui-monospace, monospace;
+        }
+
+        .fps-counter {
+            background: hsl(240 10% 3.9% / 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid hsl(240 3.7% 15.9%);
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            font-family: ui-monospace, monospace;
+            color: hsl(142 76% 36%);
+        }
+
+        .fps-counter.warning {
+            color: hsl(48 96% 53%);
+        }
+
+        .fps-counter.critical {
+            color: hsl(0 84% 60%);
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground antialiased">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="border-b border-border sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div class="container mx-auto px-4 py-3 flex items-center justify-between max-w-[1800px]">
+                <div>
+                    <h1 class="text-xl font-semibold tracking-tight">Map Viewer</h1>
+                    <p class="text-xs text-muted-foreground">Interactive province visualization tool</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="fpsCounter" class="fps-counter">-- FPS</span>
+                    <span id="zoomInfo" class="text-sm font-mono text-muted-foreground">100%</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-4 py-6 max-w-[1800px] flex-1">
+            <div class="grid grid-cols-1 xl:grid-cols-5 gap-4">
+                <!-- Map Canvas -->
+                <div class="xl:col-span-3 space-y-4">
+                    <!-- Canvas Card -->
+                    <div class="card overflow-hidden">
+                        <div id="mapWrapper" class="relative">
+                            <canvas id="visualCanvas" class="cursor-crosshair block w-full h-auto"></canvas>
+                            
+                            <!-- Zoom Controls -->
+                            <div class="absolute top-3 right-3 flex flex-col gap-1">
+                                <button id="zoomIn" class="btn btn-secondary w-9 h-9 text-base">+</button>
+                                <button id="zoomOut" class="btn btn-secondary w-9 h-9 text-base">−</button>
+                                <button id="zoomReset" class="btn btn-secondary w-9 h-9 text-xs">⌂</button>
+                            </div>
+
+                            <!-- Debug Info -->
+                            <div class="absolute top-3 left-3 debug-badge">
+                                <div class="flex items-center gap-3 text-muted-foreground">
+                                    <span id="mousePos">(--, --)</span>
+                                    <span class="text-border">|</span>
+                                    <span id="provinceId">ID: --</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Provinces Panel -->
+                    <div id="selectedProvincesPanel" class="card hidden animate-in">
+                        <div class="card-header">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-medium">Selected Provinces</h3>
+                                <button id="clearSelection" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Clear all</button>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div id="selectedProvincesList" class="space-y-2 max-h-80 overflow-y-auto"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar Controls -->
+                <div class="xl:col-span-2 space-y-4">
+                    <!-- Map Layers -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="text-sm font-medium">Map Layers</h3>
+                        </div>
+                        <div class="card-content">
+                            <div id="layersList" class="space-y-2 mb-3 min-h-[60px]"></div>
+                            <button id="refreshLayers" class="btn btn-outline w-full py-2">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Refresh Layers
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Visual Effects -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="text-sm font-medium">Visual Effects</h3>
+                        </div>
+                        <div class="card-content">
+                            <div id="effectsList" class="space-y-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Highlight Settings -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="text-sm font-medium">Highlight</h3>
+                        </div>
+                        <div class="card-content space-y-4">
+                            <div>
+                                <label class="label label-muted text-xs">Mode</label>
+                                <select id="highlightMode" class="w-full">
+                                    <option value="fill">Fill</option>
+                                    <option value="outline">Outline</option>
+                                </select>
+                            </div>
+
+                            <div id="outlineSettings" class="space-y-4 hidden">
+                                <div class="separator"></div>
+                                
+                                <div>
+                                    <label class="label label-muted text-xs">Color</label>
+                                    <div class="flex gap-2">
+                                        <input type="color" id="outlineColor" value="#ffff00" class="w-12 h-9 flex-shrink-0">
+                                        <input type="text" id="outlineColorText" value="#ffff00" class="flex-1 font-mono text-xs">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="label label-muted text-xs mb-0">Thickness</label>
+                                        <span id="outlineThicknessValue" class="text-xs font-mono text-foreground">2px</span>
+                                    </div>
+                                    <input type="range" id="outlineThickness" min="1" max="5" value="2" class="w-full">
+                                </div>
+                            </div>
+
+                            <div class="separator"></div>
+
+                            <div class="flex items-center justify-between">
+                                <label class="label label-muted text-xs mb-0">Pulse Animation</label>
+                                <button id="pulseToggle" class="toggle-switch">
+                                    <span id="pulseToggleIndicator" class="toggle-indicator"></span>
+                                </button>
+                            </div>
+
+                            <div class="separator"></div>
+
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="label label-muted text-xs mb-0">Opacity</label>
+                                    <span id="highlightOpacityValue" class="text-xs font-mono text-foreground">100%</span>
+                                </div>
+                                <input type="range" id="highlightOpacitySlider" min="0" max="100" value="100" class="w-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Base Map -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="text-sm font-medium">Base Map</h3>
+                        </div>
+                        <div class="card-content">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="label label-muted text-xs mb-0">Opacity</label>
+                                    <span id="visualOpacityValue" class="text-xs font-mono text-foreground">100%</span>
+                                </div>
+                                <input type="range" id="visualOpacitySlider" min="0" max="100" value="100" class="w-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Help -->
+                    <div class="card bg-muted/50">
+                        <div class="card-content">
+                            <div class="text-xs text-muted-foreground space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <kbd>Click</kbd>
+                                    <span>Select province</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <kbd>Shift</kbd>
+                                    <span>+</span>
+                                    <kbd>Click</kbd>
+                                    <span>Multi-select</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <kbd>Drag</kbd>
+                                    <span>Pan map</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <kbd>Scroll</kbd>
+                                    <span>Zoom</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-border mt-8">
+            <div class="container mx-auto px-4 py-6 max-w-[1800px]">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="text-sm text-muted-foreground">
+                        <p>Created by <span class="text-foreground font-medium">Cyprian Gburek</span></p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <a href="https://github.com/SirCypkowskyy" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-foreground transition-colors text-sm flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                            GitHub
+                        </a>
+                        <span class="text-muted-foreground text-xs">v1.0.0</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="fixed hidden pointer-events-none z-50">
+        <div class="tooltip p-3 min-w-[200px] max-w-[300px]">
+            <div id="tooltipContent"></div>
+        </div>
+    </div>
+
+    <script src="/static/map.js"></script>
+</body>
+</html>
