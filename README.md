@@ -935,14 +935,15 @@ Current effects are optimized for demonstration but need adjustments for actual 
   - Goods quantity indicators
   - Profit/loss color coding
 
-#### New: Country Name Labels
+#### Country Name Labels
 - [ ] **Display Country Names on Map** - Inspired by Paradox games
   - Render country names directly onto the map, scaled and rotated to fit territory shapes
-  - Fade in/out names based on zoom level or map mode
+  - Fade in/out names based on zoom level or map mode (make names bigger and smaller)
   - Overlay above province layers, below effect overlays
   - Largest countries get bigger, more prominent labels; minor countries' names scale appropriately
   - Option to toggle through map modes: owner names, province names, no labels
   - Responsive to map panning and zooming, always at correct geographic position
+  - Add option to add conditional names, like `[COUNTRY's ADJECTIVE] Malta` or `[COUNTRY's ADJECTIVE] Florida` - for provinces and regions not directly connected to the "mainland"
 
 #### Effect Refinements
 - [ ] **Holographic Effect** - Reduce performance impact
