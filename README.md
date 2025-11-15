@@ -1,5 +1,8 @@
 # Clausewitz-Style Web Map Projection
 
+![Sample Map Screenshot](./static/s_1.png)
+![Comparision of visual_map and data_map](./static/s_maps_comp.png)
+
 A high-performance web-based implementation of province map projection using invisible bitmap data layers, inspired by Paradox Interactive games (Europa Universalis, Crusader Kings, etc.). This project demonstrates how to create interactive maps where users see a beautiful, stylized visual map while the application uses a hidden data layer for precise province identification.
 
 ## Overview
@@ -14,6 +17,7 @@ When a user clicks or hovers over the visual map, the application reads the corr
 >[!NOTE]
 >This project was developed with the help of AI coding assistants. The purpose of this repository is not to showcase my own programming skills, but to demonstrate how to achieve an effect similar to the maps found in Paradox Interactive games (Europa Universalis, Crusader Kings, etc.) using web technologies.
 > Before using this code in a production environment, I encourage you to thoroughly review and validate it yourself.
+
 
 ## Architecture Overview
 
@@ -219,6 +223,8 @@ redrawMap(); // Draws highlight overlay
 showTooltip(event, provinceId, provinceData);
 ```
 
+![Sample Map Screenshot 3](./static/s_3.png)
+
 The province is highlighted on the visual canvas, and a tooltip appears near the cursor.
 
 ### Complete Detection Pipeline
@@ -345,6 +351,8 @@ The implementation includes several critical optimizations:
 - **Glitch** - Enhanced digital corruption with RGB split, tears, and color blocks
 - **Worn Map** - Realistic damage with tears, holes, stains, scratches, and fold lines
 
+![Sample Map Screenshot 2](./static/s_2.png)
+
 Each effect:
 - Can be toggled independently
 - Has intensity control (0-100%)
@@ -386,7 +394,7 @@ This technique is ideal for:
 
 ## Why This Approach?
 
-The invisible bitmap technique offers several advantages:
+The invisible bitmap technique should offer several advantages:
 
 - **Precise Selection**: Pixel-perfect province identification without complex polygon calculations or path tracing
 - **Performance**: Fast O(1) lookups using pre-computed spatial grid
@@ -457,7 +465,7 @@ The application will:
 
 ## Creating the Data Map
 
-The data map (`data_map.png`) is critical for province detection. It must:
+The data map ([`data_map.png`](./static/data_map.png)) is critical for province detection. It must:
 
 ### Requirements
 - Have the **exact same dimensions** as the visual map (pixel-perfect alignment)
@@ -471,7 +479,6 @@ The data map (`data_map.png`) is critical for province detection. It must:
 The province ID is calculated as: **`ID = (R << 16) | (G << 8) | B`**
 
 This means:
-- Maximum provinces: **16,777,216** (24-bit color space)
 - Each unique RGB color maps to exactly one province
 - Colors must be unique across the entire map
 
@@ -512,7 +519,7 @@ The following colors are treated as **invalid** and will be ignored:
 ### Tools for Creating Data Maps
 
 - **GIMP/Photoshop**: Manual painting with color picker
-- **Python + PIL**: Programmatic generation from shapefiles
+- **Paint.net/Pinta**: Fast, quick changes
 - **Custom Scripts**: Convert from polygon data to raster
 
 ## Province Data Format
@@ -928,6 +935,15 @@ Current effects are optimized for demonstration but need adjustments for actual 
   - Goods quantity indicators
   - Profit/loss color coding
 
+#### New: Country Name Labels
+- [ ] **Display Country Names on Map** - Inspired by Paradox games
+  - Render country names directly onto the map, scaled and rotated to fit territory shapes
+  - Fade in/out names based on zoom level or map mode
+  - Overlay above province layers, below effect overlays
+  - Largest countries get bigger, more prominent labels; minor countries' names scale appropriately
+  - Option to toggle through map modes: owner names, province names, no labels
+  - Responsive to map panning and zooming, always at correct geographic position
+
 #### Effect Refinements
 - [ ] **Holographic Effect** - Reduce performance impact
   - Currently recalculates waves every frame
@@ -997,69 +1013,6 @@ Current effects are optimized for demonstration but need adjustments for actual 
   - Viewport indicator
   - Click to jump to region
   - Always visible in corner
-
-#### Data & Integration
-- [ ] **Real-time Data** - WebSocket support
-  - Live province updates
-  - Multi-user collaboration
-  - Conflict detection
-  - Undo/redo history
-
-- [ ] **Game Engine Integration** - Embed in game
-  - Message passing API
-  - Synchronize game state
-  - Handle game events
-  - Export as game UI component
-
-- [ ] **Mobile Support** - Touch interactions
-  - Pinch-to-zoom
-  - Two-finger pan
-  - Touch-friendly tooltips
-  - Mobile-optimized layout
-
-### Code Quality
-- [ ] **TypeScript Migration** - Type safety
-  - Convert map.js to TypeScript
-  - Define interfaces for province data
-  - Better IDE autocomplete
-  - Catch errors at compile time
-
-- [ ] **Unit Tests** - Test coverage
-  - Province ID calculations
-  - Coordinate transformations
-  - Cache operations
-  - Effect rendering
-
-- [ ] **Documentation** - Improve inline docs
-  - JSDoc for all functions
-  - Architecture decision records
-  - Performance benchmarks
-  - Contribution guidelines
-
-- [ ] **Build System** - Modern tooling
-  - Webpack/Vite bundler
-  - Minification and tree-shaking
-  - Source maps for debugging
-  - Development hot reload
-
-### Backend Enhancements
-- [ ] **Database Integration** - Scale beyond JSON
-  - PostgreSQL with PostGIS
-  - Province data caching
-  - User preferences storage
-  - Query optimization
-
-- [ ] **Authentication** - User accounts
-  - JWT token authentication
-  - User-specific map configurations
-  - Saved provinces per user
-  - Admin panel
-
-- [ ] **Analytics** - Usage tracking
-  - Most-viewed provinces
-  - Popular effect combinations
-  - Performance metrics
-  - Error logging
 
 ## Acknowledgments
 
