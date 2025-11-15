@@ -1,9 +1,7 @@
 """FastAPI application for serving the Clausewitz-style map projection."""
 
 import asyncio
-import json
 from pathlib import Path
-from typing import cast
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
@@ -11,7 +9,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from core.models import ProvincesData
+from core.helpers import load_provinces
 
 app = FastAPI(
     title="Clausewitz-Style Web Map Projection",
@@ -24,23 +22,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Setup Jinja2 templates
 templates = Jinja2Templates(directory="templates")
-
-# Path to provinces JSON file
-PROVINCES_FILE = Path("provinces.json")
-
-
-def load_provinces() -> ProvincesData:
-    """Load province data from JSON file.
-
-    Returns:
-        ProvincesData: Province data model
-
-    """
-    if not PROVINCES_FILE.exists():
-        return ProvincesData()
-    with PROVINCES_FILE.open(encoding="utf-8") as f:
-        raw_data = cast("dict[str, dict[str, object]]", json.load(f))
-        return ProvincesData.model_validate(raw_data)
 
 
 @app.get("/", response_class=HTMLResponse)
